@@ -40,7 +40,7 @@ module MOLGENIS
         }
       }     
       
-      color = 1
+      color = 0
       parse_entities(element.find("entity"),model, color)
       
       element.find("module").each { |module_xml|

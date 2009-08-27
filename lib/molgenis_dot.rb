@@ -15,6 +15,11 @@ module MOLGENIS
     rankdir="BT"
     clusterrank = "local"
     bgcolor = "white"  
+    overlap = "false"
+    splines = "false"
+    layers = "1:2"
+    outputorder="edgesfirst"
+    
 
         node [
             fontname = "Arial"
@@ -23,18 +28,20 @@ module MOLGENIS
             color = "#808080"
             style="filled"
             fillcolor = "white"
+            layer = "2" 
         ]
 
         edge [
                 fontname = "Bitstream Vera Sans"
                 fontsize = 8
+                layer = "1"
         ]
-        
+    <% if model.modules.size > 0 %>    
     subgraph cluster_legend {
         rankdir ="LR";
         label = "module legend"
         color = "white"
-        fillcolor = white
+        fillcolor = "white"
         rankType = "same"
         <% model.modules.each { |m| %>
         "<%= m.name %>"
@@ -55,17 +62,23 @@ module MOLGENIS
         ]
         "spook_legend"
     }       
+    <% end %>
     
     subgraph cluster_main {  
         rankdir ="TB";
         pagedir="TB" 
+        fillcolor = "white"
         
       <% model.all_entities.each { |entity| %>
       "<%= entity.name %>"
            [      
                 style = "filled"
+                <% if entity.color == 0 %>
+                fillcolor="lemonchiffon1"
+                <% else %>
                 colorscheme=pastel19
                 fillcolor = "<%=entity.color%>"
+                <% end %>
                 <%if entity.abstract %>
                 fontname = "Arial-Italic"
                 fontcolor = "dimgrey"
@@ -79,9 +92,20 @@ module MOLGENIS
             ]    
       <% } %>
       
-  
+   /*interface relationships*/
+          edge [
+                  arrowhead = "empty"
+                  color = "grey"
+          ]
+  <% model.all_entities.each do |entity|  %>
+        <% if entity.implements %>
+           <% entity.implements.each do |interface| %>
+             "<%= entity.name %>" -> "<%= interface %>"
+            <%end%>
+        <%end %>
+  <% end %> 
       
-  /*interface relationships*/
+  /*extends relationships*/
           edge [
                   arrowhead = "empty"
                   color = "black"
@@ -132,7 +156,7 @@ module MOLGENIS
       }
       
       edge [style = "invis"]
-      "spook_legend" -> "spook_main"
+      <% if model.modules.size > 0%>"spook_legend" -> "spook_main"<% end %>
     }
     }.gsub(/^  /, '')
     imagedot = ERB.new(template, 0, "%<>")
