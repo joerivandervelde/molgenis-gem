@@ -1,0 +1,480 @@
+<molgenis name="xgap4nutrigenomics" label="XGAP for Brassica Vegetable Nutrigenomics">
+	<module name="xgap.cluster">
+		<description>Cluster calculation tables.</description>
+		<entity name="Task" extends="Describable">
+			<field name="OutputDataName" nillable="false" type="varchar"
+				length="127" description="Name of the matrix that will be written" />
+			<field name="Timestamp" nillable="false"
+				type="decimal" description="Timestamp in milliseconds since 1970 of this task." />
+			<field name="Analysis" type="xref" nillable="false" xref_entity="Analysis"
+				xref_field="id" xref_label="name" />
+			<unique fields="OutputDataName" description="OutputDataName is unique" />
+		</entity>
+		<entity name="Job" extends="Describable">
+			<field name="Task" type="xref" nillable="false" xref_entity="Task"
+				xref_field="id" xref_label="OutputDataName"
+				description="Reference to the task this job belongs to." />
+			<field name="StatusCode" nillable="false"
+				type="decimal" description="Status code of this task." />
+			<field name="StatusText" nillable="false"
+				type="varchar" length="127" description="Status text of this task." />
+			<field name="StatusProgress" nillable="true"
+				type="decimal" description="Percentage done." />
+			<field name="Nr" nillable="false"
+				type="decimal" description="Number of this job within the task." />
+		</entity>
+		
+		<entity name="Analysis" extends="Identifiable">
+			<field name="Description" nillable="true"
+				type="varchar" length="127" description="Optional description of this type of analysis." />
+			<field name="ParameterSet" type="xref" nillable="false" xref_entity="ParameterSet"
+				xref_field="id" xref_label="name" />
+			<field name="DataSet" type="xref" nillable="false" xref_entity="DataSet"
+				xref_field="id" xref_label="name" />
+			<field name="TargetFileName" nillable="false"
+				type="varchar" length="127" description="The file used to start a specific type of analysis on the cluster." />
+			<unique fields="name" description="Name is unique" />
+		</entity>
+
+		<entity name="ParameterSet" extends="Identifiable">
+			<unique fields="name" description="Name is unique" />
+		</entity>
+		
+		<entity name="ParameterName" extends="Identifiable">
+			<field name="ParameterSet" type="xref" nillable="false" xref_entity="ParameterSet"
+				xref_field="id" xref_label="name" />
+				<unique fields="name,ParameterSet" description="Name is unique within a ParameterSet" />
+		</entity>
+		
+		<entity name="ParameterValue" extends="Identifiable">
+			<field name="ParameterName" type="xref" nillable="false" xref_entity="ParameterName"
+				xref_field="id" xref_label="name" />
+			<field name="Value" nillable="false"
+				type="varchar" length="127" description="Possible value of this parameter." />
+			<unique fields="name,ParameterName" description="Name is unique within a ParameterName" />
+		</entity>
+		
+		<entity name="DataSet" extends="Identifiable">
+			<unique fields="name" description="Name is unique" />
+		</entity>
+		
+		<entity name="DataName" extends="Identifiable">
+			<field name="DataSet" type="xref" nillable="false" xref_entity="DataSet"
+				xref_field="id" xref_label="name" />
+			<unique fields="name,DataSet" description="Name is unique within a dataset" />
+		</entity>
+		
+		<entity name="DataValue" extends="Identifiable">
+			<field name="DataName" type="xref" nillable="false" xref_entity="DataName"
+				xref_field="id" xref_label="name" />
+			<field name="Value" type="xref" nillable="false" xref_entity="Data"
+				xref_field="id" xref_label="name" description="Possible reference of this Data."/>
+			<unique fields="name,DataName" description="Name is unique within a DataName" />
+		</entity>
+		
+		<entity name="SelectedParameter" extends="Describable">
+			<field name="Task" type="xref" nillable="false" xref_entity="Task"
+				xref_field="id" xref_label="OutputDataName" />
+			<field name="ParameterName" nillable="false"
+				type="varchar" length="127" description="Copied name of this parameter." />
+			<field name="ParameterValue" nillable="false"
+				type="varchar" length="127" description="Copied value of this parameter." />
+		</entity>
+		
+		<entity name="SelectedData" extends="Describable">
+			<field name="Task" type="xref" nillable="false" xref_entity="Task"
+				xref_field="id" xref_label="OutputDataName" />
+			<field name="DataName" nillable="false"
+				type="varchar" length="127" description="Copied name of this Data" />
+			<field name="DataValue" nillable="false"
+				type="varchar" length="127" description="Copied referenced name of this Data" />
+		</entity>
+		
+		</module>
+	<!-- INVESTIGATION -->
+	<module name="xgap.core">
+		<description>Core entities.</description>
+		<entity name="Investigation" extends="FugeInvestigation">
+			<unique fields="name" description="Name is unique" />
+		</entity>
+		<entity name="ProtocolApplication"
+			extends="FugeProtocolApplication">
+			<field name="Status" type="enum"
+				enum_options="[inprocess, final]" default="inprocess"
+				description="The status of this protocolapplication (inprocess = still working on it, final = ready for further analysis)." />
+			<field name="Investigation" type="xref"
+				xref_entity="Investigation" xref_field="id"
+				xref_label="name"
+				description="Reference to the Investigation this protocolapplication belongs to." />
+			<unique fields="name,Investigation"
+				description="Name is unique within an Investigation" />
+		</entity>
+		
+		<entity name="BibliographicReference" extends="Identifiable">
+			<description>
+				Represents bibliographic references, including the most
+				common attributes. Note that because a
+				BibliographicReference is Identifiable, a DatabaseEntry
+				can also be specified.
+			</description>
+			<field nillable="false" auto="false" name="authors"
+				type="varchar"
+				description="The names of the authors of the reference." />
+			<field nillable="false" auto="false" name="publication"
+				type="varchar" description="The name of the journal, book etc." />
+			<field nillable="false" auto="false" name="publisher"
+				type="varchar" description="The publisher of the publication." />
+			<field nillable="false" auto="false" name="editor"
+				type="varchar" description="The editor(s) of the reference." />
+			<field nillable="false" auto="false" name="year" type="int"
+				description="The year of publication." />
+			<field nillable="false" auto="false" name="volume"
+				type="varchar" description="The volume name or number." />
+			<field nillable="false" auto="false" name="issue"
+				type="varchar" description="The issue name or number." />
+			<field nillable="false" auto="false" name="pages"
+				type="varchar" description="The page numbers." />
+			<field nillable="false" auto="false" name="title"
+				type="varchar"
+				description="The title of the BibliographicReference." />
+			<field name="Investigation" type="xref"
+				xref_entity="Investigation" xref_field="id"
+				xref_label="name"
+				description="Reference to the Investigation this protocolapplication belongs to." />
+		</entity>
+		
+		
+		<!-- DATA -->
+		<entity name="Data" extends="FugeData">
+			<description>
+				Generic structure for describing data matrices such as
+				genotype result, gene expression measurement, QTL
+				calculation, etc.
+			</description>
+			<field name="Investigation" type="xref"
+				xref_entity="Investigation" xref_field="id"
+				xref_label="name"
+				description="Reference to the Investigation this data is measured as part of." />
+			<!--field name="DataType" type="xref"
+				xref_entity="DataType" xref_field="id"
+				xref_label="name" description="Added to distinguish between qtl and raw data etc." /-->
+			<field name="RowType" type="enum"
+				enum_options="[Marker,Probe,ProbeSet,Individual,Sample,PairedSample,MassPeak,Gene,Clone,Trait,Subject,Strain,Metabolite,Spot,Phenotype,NMRBin]"
+				description="Type of the columns of this matrix. Each column refers to a Trait or Subject (DimensionElement). " />
+			<field name="ColType" type="enum"
+				enum_options="[Marker,Probe,ProbeSet,Individual,Sample,PairedSample,MassPeak,Gene,Clone,Trait,Subject,Strain,Metabolite,Spot,Phenotype,NMRBin]"
+				description="Type of the rows of this matrix. Each row refers to a Trait or Subject (DimensionElement)" />
+			<field name="ValueType" type="enum"
+				enum_options="[Text,Decimal]"
+				description="Type of the values of this matrix. E.g. text strings or decimal numbers." />
+			<field name="TotalRows" type="int" default="0"/>
+			<field name="TotalCols" type="int" default="0"/>
+			<unique fields="name,Investigation" />
+		</entity>
+		<entity name="DimensionElement"
+			extends="FugeDimensionElement">
+			<description>
+				Describes the biological material or subject which is
+				being 'measured' by an Data set.
+				<br />
+				For example an 'Sample' extends from Item, which makes
+				it possible that a microarray-assay Data set such sample
+				(as DataElement can reference any Item).
+				<br />
+				An DimensionElement is always linked to a single one
+				Investigation.
+			</description>
+			<field name="Investigation" type="xref_single"
+				xref_entity="Investigation" xref_field="id"
+				xref_label="name"
+				description="Reference to the investigation this belongs to." />
+			<unique fields="name,Investigation,Type"
+				description="Name is unique within an investigation within its type (e.g. there can be a Gene and a Protein with the same name, but not another Gene)." />
+		</entity>
+		<entity name="DataElement" abstract="true">
+			<description>
+				Generic data structure for aiming the values of a data
+				set as described in Data. Each DataElement describes a
+				cell in a data matrix of rows (from) and columns (to),
+				e.g., in "dataset X" it was measured that geneX (col)
+				relates to geneZ (row).
+			</description>
+			<field nillable="false" auto="true" name="id"
+				type="int" description="automatically generated id-field"
+				unique="true" />
+			<field name="Data" type="xref" xref_entity="Data"
+				xref_field="id" xref_label="name"
+				description="Reference to the data this entity belongs to." />
+			<field name="Col" type="xref" xref_entity="DimensionElement"
+				xref_field="id" xref_label="name"
+				description="References the DimensionElement on one end of the relation. Can be ommited for 1D data (i.e., a data list)" />
+			<field name="Row" type="xref" xref_entity="DimensionElement"
+				xref_field="id" xref_label="name"
+				description="References the DimensionElement on the other end of the relation." />
+			<field name="RowIndex" type="int"
+				description="Row position in the matrix." />		
+			<field name="ColIndex" type="int"
+				description="Col position in the matrix." />	
+			<unique fields="ColIndex,RowIndex,Data"/>
+			<unique fields="RowIndex,ColIndex,Data"/> 
+			<!-- 
+			<unique fields="Row,Col,Data"/>
+			<unique fields="Col,Row,Data"/> -->
+		</entity>
+		<entity name="DecimalDataElement" implements="DataElement">
+			<description>
+				A DataElement for storing decimal data.
+			</description>
+			<field name="Value" label="Value" nillable="true"
+				type="decimal" description="The value, e.g., correlation." />
+		</entity>
+		<entity name="TextDataElement" implements="DataElement">
+			<description>Store text data</description>
+			<field name="Value" label="Value" type="text"
+				nillable="true"
+				description="The value, e.g., genotype strings like AA, BA, BB." />
+		</entity>
+	</module>
+	<!--SUBJECTS -->
+	<!-- issue: how about a genetype: that can be on level of individual or on level of RILs. For now, this is for the user to find out. -->
+	<module name="xgap.subject">
+	<description>Subject variants.</description>
+		<entity name="Species" extends="OntologyTerm"
+			description="Ontology of species. E.g. Arabidopsis thaliana" />
+		<entity name="DataType" extends="OntologyTerm"
+			description="Ontology of genotype to phenotype data types. E.g. QTL profiles" />
+		<entity name="Tissue" extends="OntologyTerm"
+		
+			description="Ontology of tissue. E.g. spleen" />
+		<entity name="SampleLabel" extends="OntologyTerm"
+			description="Ontology of sample labels. E.g. cy3, cy5" />
+		<entity name="Subject" extends="DimensionElement">
+			<field name="Species" type="xref" nillable="true"
+				xref_entity="Species" xref_field="id" xref_label="name"
+				description="The species this subject is an instance of/part of/extracted from." />
+		</entity>
+		<entity name="Strain" extends="Subject">
+			<description>
+				A variant or subtype of animal, plant, virus or
+				bacteria.
+			</description>
+			<field name="StrainType" type="enum"
+				enum_options="[Natural,Parental,F1,RI,RCC,CSS,Other]" default="RI"
+				description="Indicate the type of Strain (Natural=wild type, Parental=parents of a cross, F1=First generation of cross, RCC=Recombinant congenic, CSS=chromosome substitution)" />
+			<!-- TODO move StrainType to become an ontology? -->
+			<field name="FounderStrains" type="mref" nillable="true"
+				xref_entity="Strain" xref_field="id" xref_label="name"
+				description="The strain(s) that were crossed to create this strain." />
+			<!-- TODO: don't we need info on how many generation the cross has been inbreeded? -->
+		</entity>
+		<entity name="Individual" extends="Subject">
+			<description>Biological individuals.</description>
+			<field name="Strain" type="xref" xref_entity="Strain"
+				xref_field="id" xref_label="name" nillable="true"
+				description="Refers to the strain this individual is part of." />
+			<field name="Mother" type="xref" nillable="true"
+				xref_entity="Individual" xref_field="id" xref_label="name"
+				description="Refers to the mother of the individual." />
+			<field name="Father" type="xref" nillable="true"
+				xref_entity="Individual" xref_field="id" xref_label="name"
+				description="Refers to the father of the individual." />
+		</entity>
+		<entity name="Sample" extends="Subject">
+			<description></description>
+			<field name="Individual" type="xref"
+				xref_entity="Individual" xref_field="id" xref_label="name"
+				nillable="true"
+				description="The individual from which this sample was taken." />
+			<field name="Tissue" type="xref" xref_entity="Tissue"
+				xref_field="id" xref_label="name" nillable="true"
+				description="The tissue from which this sample was taken." />
+		</entity>
+		<entity name="PairedSample" extends="Subject">
+			<description>
+				A pair of samples labeled for a two-color microarray
+				experiment.
+			</description>
+			<field name="Subject1" type="xref" xref_entity="Individual"
+				xref_field="id" xref_label="name"
+				description="The first subject" />
+			<field name="Label1" type="xref" xref_entity="SampleLabel"
+				xref_field="id" xref_label="name" nillable="true"
+				description="Which channel or Fluorescent labeling is associated with the first subject" />
+			<field name="Subject2" type="xref" xref_entity="Individual"
+				xref_field="id" xref_label="name"
+				description="The second sample" />
+			<field name="Label2" type="xref" xref_entity="SampleLabel"
+				xref_field="id" xref_label="name" nillable="true"
+				description="Which channel or Fluorescent labeling is associated with the second subject" />
+		</entity>
+	</module>
+	<!-- TRAITS -->
+	<module name="xgap.trait">
+		<description>Trait variants.</description>
+		<entity name="MeasurementUnit" extends="OntologyTerm"
+			description="Ontology of measurment unit, e.g. centimeter, grams (TODO: adopt PATO?)" />
+		<entity name="Locus" abstract="true">
+			<description>
+				Common structure for entities that have a genomic
+				position. Typical examples of such traits are genes,
+				probes and markers.
+			</description>
+			<field name="cM" label="cMPosition" type="decimal"
+				nillable="true"
+				description="genetic map position in centi morgan (cM)." />
+			<field name="Chr" label="Chromosome" type="varchar"
+				length="10" nillable="true"
+				description="chromosome name or number string (1, 2, …, x, y)" />
+			<field name="bpStart" label="Start (5')" type="long"
+				nillable="true"
+				description="numeric basepair postion (5') on the chromosome" />
+			<field name="bpEnd" label="End" type="long" nillable="true"
+				description="numeric basepair postion (3') on the chromosome" />
+			<field name="Species" label="Species" type="xref"
+				xref_entity="Species" xref_field="id" xref_label="name"
+				nillable="true"
+				description="Reference to the species this position belongs to." />
+			<field name="Seq" type="text" nillable="true"
+				description="The FASTA text representation of the sequence." />
+		</entity>			
+		<entity name="Trait" extends="DimensionElement">
+			<description>
+				Traits that are being measured. Traits can be very
+				diverse. The specifics of these traits can be added, as
+				for example in a "Gene" (Gene extends Trait).
+			</description>
+		</entity>
+		<entity name="NMRBin" extends="Trait">
+			<description>
+			Shift of the NMR frequency due to the chemical environment.
+			</description>
+		</entity>
+		<entity name="Clone" extends="Trait" implements="Locus">
+			<description>
+			BAC clone fragment.
+			</description>
+		</entity>
+		<entity name="Factor" extends="Trait">
+			<description>
+			Experimental conditions, such as temperature differences, batch effects etc.
+			</description>
+		</entity>
+		<entity name="Gene" extends="Trait" implements="Locus">
+			<description>
+				Trait annotations specific for genes.
+			</description>
+			<field name="Symbol" nillable="true"
+				description="Main symbol this gene is known by (not necessarily unique, in constrast to 'name')" />
+			<field name="Aliases" nillable="true"
+				description="Alternative symbols this gene is known by, separated by ','" />
+			<field name="Orientation" type="enum" enum_options="[F,R]"
+				nillable="true"
+				description="Orientation of the gene on the genome (F=forward, R=reverse)" />
+			<field name="Control" type="bool" nillable="true"
+				description="Indicating whether this is a 'housekeeping' gene that can be used as control." />
+		</entity>
+		<entity name="Protein" extends="Trait">
+			<description>
+				Trait annotations specific for proteins.
+			</description>
+			<!--  Question: Is there a specific notation involved that we can create type for?  -->
+			<field name="Gene" label="Gene" type="xref"
+				xref_entity="Gene" xref_field="id" xref_label="name"
+				nillable="true" description="The gene that produces this protein" />
+			<field name="Sequence" label="Sequence" type="text"
+				nillable="true" description="The aminoacid sequence." />
+			<field name="Mass" label="Mass" type="decimal"
+				nillable="true" description="The mass of this metabolite" />
+		</entity>
+		<entity name="Metabolite" extends="Trait">
+			<description>
+				Trait annotations specific for metabolites.
+			</description>
+			<field name="Formula" label="Formula" type="varchar"
+				length="128" nillable="true"
+				description="The chemical formula of a metabolite." />
+			<field name="Mass" label="Mass" type="decimal"
+				nillable="true" description="The mass of this metabolite" />
+			<field name="Structure" label="Structure" type="text"
+				nillable="true"
+				description="The chemical structure of a metabolite (in SMILES representation)." />
+		</entity>
+		<entity name="Phenotype" extends="Trait">
+			<description>
+				Trait annotations specific for classical phenotypes.
+			</description>
+			<!--  Question: Is there a specific notation involved that we can create type for? -->
+			<!--field name="Unit" label="Unit" type="xref"
+				xref_entity="MeasurementUnit" xref_field="id"
+				xref_label="name" nillable="true"
+				description="The unit this trait was measured in like centimeters, gram, etc (TODO: make ontology)." /-->
+			<field name="Category" label="Category" type="varchar"
+				length="128" nillable="true"  />
+			<field name="Description" label="Description" type="varchar"
+				length="512" nillable="true"  />
+			<field name="Molecule" label="Molecule" type="varchar"
+				length="16" nillable="true"  />
+		</entity>
+		<entity name="ProtocolElement" extends="Trait">
+			<description>
+				Quantitative treats that are part of a protocol. E.g.
+				microarray probes, marker set.
+			</description>
+			<field name="Protocol" type="xref_single" nillable="true"
+				xref_entity="Protocol" xref_field="id" xref_label="name"
+				description="Reference to the protocol this trait is part of." />
+		</entity>
+		<entity name="Marker" extends="ProtocolElement"
+			implements="Locus">
+			<description>
+				Trait annotations specific for markers.
+			</description>
+		</entity>
+		<entity name="Probe" extends="ProtocolElement"
+			implements="Locus">
+			<description>
+				A piece of sequence that reports for the expression of a
+				gene, typically spotted onto a microarray.
+			</description>
+			<field name="Mismatch" type="bool"
+				description="Indicating whether the probe is a match"
+				default="false" />
+			<field name="ProbeSet" type="xref" nillable="true"
+				xref_entity="ProbeSet" xref_field="id" xref_label="name"
+				description="Optional: probeset this probe belongs to (e.g., in Affymetrix assays)." />
+		</entity>
+		<entity name="Spot" extends="Probe">
+			<description>
+				This is the spot on a microarray.
+				<br />
+				Note: We don't distinquish between probes (the sequence)
+				and spots (the sequence as spotted on the array).
+			</description>
+			<field name="X" type="int" description="Row" />
+			<field name="Y" type="int" description="Column" />
+			<field name="GridX" type="int" description="Meta Row"
+				nillable="true" />
+			<field name="GridY" type="int" description="Meta Column"
+				nillable="true" />
+			<unique fields="Protocol,X,Y,GridX,GridY" />
+		</entity>
+		<entity name="ProbeSet" extends="ProtocolElement">
+			<description>
+				A set of Probes. E.g. Affymetrix probeset has multiple
+				probes.
+			</description>
+		</entity>
+		<entity name="MassPeak" extends="ProtocolElement">
+			<description>
+				A peak that has been selected within a mass spectrometry
+				experiment.
+			</description>
+			<field name="MZ" type="decimal" optional="true"
+				description="Mass over charge ratio of this peak." />
+			<!--field name="Intensity" type="decimal" optional="true"
+				description="Intensity of this peak." /-->
+			<field name="RetentionTime" type="decimal" optional="true"
+				description="The retention-time of this peak in minutes." />
+		</entity>
+	</module>
+</molgenis>

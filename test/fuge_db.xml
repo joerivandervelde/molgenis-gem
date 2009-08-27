@@ -1,0 +1,410 @@
+<molgenis name="fuge">
+	<!--
+		all xrefs to identifiable have xref_label="name" 
+	-->
+	<module name="fuge.common">
+		<description>Common elements inherited from FuGE.</description>
+		<entity name="Identifiable" extends="Describable">
+			<description>
+				Other classes in the model can be specified as
+				sub-classes, inheriting from Identifiable. Identifiable
+				gives classes a unique identifier within the scope and a
+				name that need not be unique. Identifiable also provides
+				a mechanism for annotating objects with
+				BibliographicReference(s) and DatabaseEntry(s).
+			</description>
+			<!-- <field nillable="false" auto="false" name="identifier" type="varchar" description="An identifier is an unambiguous string that is unique within the scope (i.e. a document, a set of related documents, or a repository) of its use."/> -->
+			<field index="true" nillable="false" auto="false" name="name"
+				length="127" type="varchar"
+				description="The potentially ambiguous common identifier, such as a human-readable name for the instance." />
+			<!-- field nillable="true" auto="false" name="bibliographicReferences" type="mref" description="null:References to existing literature." xref_name="BibliographicReferences" xref_entity="BibliographicReference" xref_field="id" xref_label="name"/-->
+		</entity>
+		<entity name="Describable">
+			<description>
+				Abstract class that allows subclasses to inherit
+				associations that enable objects to be given a text
+				description, additional annotations as Ontology entries,
+				a URI, associations to Audit for tracking changes, and
+				the association to Security for indicating permissions.
+				The URI, Annotations, PropertySets and Descriptions
+				associations inherited from Describable should only be
+				used to capture additional information where the model
+				contains no other structures that could be used to
+				capture the information.
+			</description>
+			<!-- field nillable="true" auto="false" name="security" type="xref" description="shared:Information on the security for the instance of the class." xref_name="Security" xref_entity="Security" xref_field="id" xref_label="name"/>
+				<field nillable="true" auto="false" name="annotations" type="mref" description="null:Allows specification of additional ontology entries related to the instance being described that are not directly specified elsewhere." xref_name="Annotations" xref_entity="OntologyTerm" xref_field="id" xref_label="name"/>
+				<field nillable="true" auto="false" name="uri" type="xref" description="Self-reference (has-single): composite:A URI associated with a Describable object." xref_name="URI" xref_entity="URI" xref_field="id" xref_label="name"/-->
+			<field nillable="false" auto="true" name="id"
+				type="int" readonly="true"
+				description="automatically generated id-field" unique="true" />
+		</entity>
+		<entity name="Security" extends="Identifiable">
+			<description>
+				Permission information for an object as to ownership,
+				write and read permissions.
+			</description>
+			<field nillable="true" auto="false" name="owners"
+				type="mref"
+				description="null:The owner(s) of the security rights on the object."
+				xref_name="Owners" xref_entity="Contact" xref_field="id"
+				xref_label="name" />
+		</entity>
+		<entity name="OntologyTerm" extends="Identifiable">
+			<description>
+				A single entry from an ontology or a controlled
+				vocabulary. If it is a simple controlled vocabulary,
+				there may be no formal accession for the term. In these
+				cases the local name should be repeated in both term and
+				termAccession. If the term has a value, the
+				OntologyIndividual will have a single DataProperty whose
+				value was the value for the property. For instance, for
+				an OntologyIndividual based on the MO ontology the
+				attributes might be: The term would be what is usually
+				called the local name in the Ontology, for instance
+				'Age'; The termAccession could be
+				'http://mged.sourceforge.net/ontologies/MGEDOntology.owl#Age'
+				or a an arbitrary accession if one exists; The
+				identifier is a unique identifier for individuals in the
+				scope of the FuGE instance; The inherited name attribute
+				should not be used; The ontologyURI of OntologySource
+				could be
+				'http://mged.sourceforge.net/ontologies/MGEDOntology.owl&quot;.
+				The OntologyTerm subclasses are instances of Ontology
+				classes and properties, not the actual terms themselves.
+				An OntologyIndividual, if based on an existing Ontology,
+				can be considered a statement that can be validated
+				against the referenced ontology. The subclasses and
+				their associations are based on the Ontology Definition
+				Model, ad/2005-04-13, submitted to the OMG as a response
+				to RFP ad/2003-03-40, Copyright Â© 2005 DSTC Pty Ltd.
+				Copyright Â© 2005 IBM Copyright Â© 2005 Sandpiper
+				Software, Inc under the standard OMG license terms.
+			</description>
+			<field nillable="false" auto="false" name="term"
+				type="varchar"
+				description="The ontology term itself, also known as the local name in some ontologies." />
+			<field nillable="false" auto="false" name="termAccession"
+				type="varchar"
+				description="The accession number assigned to the ontology term in the source ontology. If there is no explicit accession assigned, then the term (localname) must be repeated (i.e. the term is the unique accession).  " />
+			<field nillable="true" auto="false" name="ontologySource"
+				type="xref"
+				description="null:The source ontology or controlled vocabulary list that ontology terms have been obtained from."
+				xref_name="OntologySource" xref_entity="OntologySource"
+				xref_field="id" xref_label="name" />
+		</entity>
+		<entity name="URI" extends="Describable">
+			<description>
+				A URI is short for Uniform Resource Identifier. A URI is
+				a compact sequence of characters that identifies an
+				abstract or physical resource.
+			</description>
+			<field nillable="false" auto="false" name="location"
+				type="hyperlink"
+				description="The Uniform Resource Indicator for this object." />
+		</entity>
+		
+		
+		
+		
+		
+		<entity name="OntologySource" extends="Identifiable">
+			<description>
+				The source ontology or controlled vocabulary list that
+				ontology terms have been obtained from.
+			</description>
+			<field nillable="false" auto="false" name="ontologyURI"
+				type="hyperlink"
+				description="A URI that references the location of the ontology." />
+		</entity>
+		<entity name="Contact" extends="Identifiable">
+			<description>
+				A contact is either a person or an organization.
+			</description>
+			<field nillable="false" auto="false" name="address"
+				type="varchar" description="The address of the Contact." />
+			<field nillable="false" auto="false" name="phone"
+				type="varchar"
+				description="The telephone number of the Contact including the suitable area codes." />
+			<field nillable="false" auto="false" name="email"
+				type="varchar" description="The email address of the Contact." />
+			<field nillable="false" auto="false" name="fax"
+				type="varchar" description="The fax number of the Contact." />
+			<field nillable="false" auto="false" name="tollFreePhone"
+				type="varchar"
+				description="A toll free phone number for the Contact, including suitable area codes." />
+		</entity>
+		<entity name="Description" extends="Describable">
+			<description>
+				A free text description of an object.
+			</description>
+			<field nillable="false" auto="false" name="text"
+				type="varchar" description="The description." />
+			<field nillable="false" auto="false"
+				name="Describable_descriptions" type="xref"
+				description="Making MREF of 'Describable.descriptions': composite:Free hand text descriptions.  "
+				xref_entity="Describable" xref_field="id" />
+		</entity>
+		<entity name="DatabaseReference" extends="Describable">
+			<description>
+				A reference to a record in a database.
+			</description>
+			<field nillable="false" auto="false" name="accession"
+				type="varchar"
+				description="The identifier used to look up the record." />
+			<field nillable="false" auto="false" name="accessionVersion"
+				type="varchar"
+				description="The appropriate version of the accession (if applicable)." />
+			<field nillable="false" auto="false" name="database_id"
+				type="xref"
+				description="null:Reference to the database where the DatabaseEntry instance can be found."
+				xref_name="Database" xref_entity="Database" xref_field="id" />
+			<field nillable="false" auto="false"
+				name="IdentifiableReferences" type="xref"
+				description="Making MREF of 'Identifiable.databaseReferences': composite:References to entries in databases."
+				xref_entity="Identifiable" xref_field="id" />
+		</entity>
+		<entity name="Database" extends="Identifiable">
+			<description>An address to a repository.</description>
+			<field nillable="false" auto="false" name="version"
+				type="varchar" description="The version of the Database." />
+			<field nillable="false" auto="false" name="dburi"
+				type="hyperlink" description="The location of the Database." />
+		</entity>
+		<entity name="FugeProtocolApplication"
+			extends="ParameterizableApplication">
+			<description>
+				The use of a protocol with the requisite Parameters and
+				ParameterValues. ProtocolApplications can take Material
+				or Data (or both) as input and produce Material or Data
+				(or both) as output. ProtocolApplication is abstract and
+				should be subclassed in the development of modular
+				formats. The subclass GenericProtocolApplication can be
+				used without extension.
+			</description>
+			<field nillable="false" auto="false" name="activityDate"
+				type="datetime" description="When the protocol was applied." />
+			<field nillable="true" auto="false" name="inputData"
+				type="mref"
+				description="null:The input data for a ProtocolApplication."
+				xref_name="InputData" xref_entity="Data" xref_field="id"
+				xref_label="name" />
+			<field nillable="false" auto="false" name="protocol"
+				type="xref" description="null:The protocol that is being used."
+				xref_name="Protocol" xref_entity="Protocol" xref_field="id"
+				xref_label="name" />
+			<!-- field nillable="true" auto="false"
+				name="inputCompleteMaterials" type="mref"
+				description="FIXME: upgraded(one-to-many to many-to-many). This association should be extended for cases where the entire Material is used in the ProtocolApplication in full and it does not make sense to give a measured quantity of the Material as input."
+				xref_name="InputCompleteMaterials" xref_entity="Material"
+				xref_field="id" xref_label="name" /-->
+			<field nillable="true" auto="false" name="protocolDeviation"
+				type="xref"
+				description="Self-reference (has-single): composite:References a Description object to define human readable protocol deviations."
+				xref_name="ProtocolDeviation" xref_entity="Description"
+				xref_field="id" />
+			<field nillable="true" auto="false" name="outputMaterials"
+				type="mref"
+				description="FIXME: upgraded(one-to-many to many-to-many). Association to the Material(s) created as output by this ProtocolApplication."
+				xref_name="OutputMaterials" xref_entity="Material"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="outputData"
+				type="mref"
+				description="FIXME: upgraded(one-to-many to many-to-many). The data produced by a ProtocolApplication."
+				xref_name="OutputData" xref_entity="Data" xref_field="id"
+				xref_label="name" />
+		</entity>
+		<entity name="ParameterizableApplication"
+			extends="Identifiable">
+			<description>
+				The interface that is the use of a Parameterizable
+				class.
+			</description>
+		</entity>
+		<entity name="Protocol" extends="Parameterizable">
+			<description>
+				A Protocol is a parameterizable description of a method.
+				ProtocolApplication is used to specify the
+				ParameterValues of its Protocol's Parameters. Protocol
+				should be extended in data formats. For cases where no
+				extension is developed, the subclass of Protocol,
+				GenericProtocol, should be used to capture experimental
+				protocols.
+			</description>
+			<field nillable="true" auto="false" name="outputTypes"
+				type="mref"
+				description="null:The types of outputs produced by this Protocol e.g. organisms, solutions, data formats etc. "
+				xref_name="OutputTypes" xref_entity="OntologyTerm"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="inputTypes"
+				type="mref"
+				description="null:The types of inputs this Protocol can take e.g. organisms, solutions, data formats etc. "
+				xref_name="InputTypes" xref_entity="OntologyTerm"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="software"
+				type="mref" description="null:Software used by this Protocol."
+				xref_name="Software" xref_entity="Software" xref_field="id"
+				xref_label="name" />
+			<field nillable="true" auto="false" name="equipment"
+				type="mref" description="null:Hardware used by this protocol."
+				xref_name="Equipment" xref_entity="Equipment"
+				xref_field="id" xref_label="name" />
+		</entity>
+		<entity name="Parameterizable" extends="Identifiable">
+			<description>
+				The Parameterizable interface encapsulates the
+				association of Parameters with ParameterValues.
+			</description>
+			<field nillable="true" auto="false" name="types" type="mref"
+				description="null:The type of Equipment, Software or Protocol."
+				xref_name="Types" xref_entity="OntologyTerm" xref_field="id"
+				xref_label="name" />
+		</entity>
+		<entity name="Software" extends="Parameterizable">
+			<description>
+				Software used in the Protocol. Examples of Software
+				include: feature extraction software, clustering
+				software, etc... Software is abstract and should either
+				be extended by subclassing or the GenericSoftware class,
+				a functional version of Software, should be used without
+				extension.
+			</description>
+			<field nillable="false" auto="false" name="version"
+				type="varchar" description="The version of Software used." />
+			<field nillable="true" auto="false" name="equipment"
+				type="mref"
+				description="FIXME: upgraded(one-to-many to many-to-many). Associates Equipment and Software together.  Indicates that a set of Software is run on a piece of Equipment."
+				xref_name="Software2Equipment" xref_entity="Equipment"
+				xref_field="id" xref_label="name" />
+		</entity>
+		<entity name="Equipment" extends="Parameterizable">
+			<description>
+				The equipment (hardware) used in the Protocol. Examples
+				include: computers, scanners, wash stations etc...
+				Equipment is abstract and should either be extended by
+				subclassing or the GenericEquipment class, a functional
+				version of Equipment, should be used.
+			</description>
+			<field nillable="true" auto="false" name="make" type="xref"
+				description="null:The equipment make, usually the organization that makes the equipment."
+				xref_name="Make" xref_entity="OntologyTerm" xref_field="id"
+				xref_label="name" />
+			<field nillable="true" auto="false" name="equipmentParts"
+				type="mref"
+				description="null:This association can be used to specify sub-components of a &quot;parent&quot; Equipment instance. The cardinality allows pieces of Equipment to be associated with more than one parent, for example allowing the re-use different parts.   If a Protocol makes use of a &quot;parent&quot; Equipment and EquipmentParts, all of the sub-component Equipment instances must also be directly referenced from the Protocol using the Equipment association."
+				xref_name="EquipmentParts" xref_entity="Equipment"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="software"
+				type="mref"
+				description="FIXME: upgraded(one-to-many to many-to-many). Associates Equipment and Software together.  Indicates that a set of Software is run on a piece of Equipment."
+				xref_name="Software2Equipment" xref_entity="Software"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="model" type="xref"
+				description="null:The Equipment model." xref_name="Model"
+				xref_entity="OntologyTerm" xref_field="id"
+				xref_label="name" />
+		</entity>
+	</module>
+	<module name="fuge.bio">
+		<description>Bio elements inherited from FuGE.</description>
+		<entity name="FugeInvestigation" extends="Identifiable">
+			<description>
+				An Investigation is a self-contained unit of study that
+				contains one or more types of 'omics technology.
+			</description>
+			<!-- field nillable="true" auto="false" name="conclusion" type="xref" description="Self-reference (has-single): composite:The conclusions of the Investigation." xref_name="Conclusion" xref_entity="Description" xref_field="id"/>
+				<field nillable="true" auto="false" name="sourceMaterials" type="mref" description="null:Investigationally important materials.  These are typically a species or set of strains.  This might also be a bucket of seawater or a pound of dirt. It is expected that these Materials are referenced by a ProtocolApplication." xref_name="SourceMaterials" xref_entity="Material" xref_field="id" xref_label="name"/>
+				<field nillable="true" auto="false" name="investigationTypes" type="mref" description="null:The biological design type of the Investigation, such as toxicity, drug-response, gene knockout etc." xref_name="InvestigationTypes" xref_entity="OntologyTerm" xref_field="id" xref_label="name"/>
+				<field nillable="true" auto="false" name="summaryResults" type="mref" description="null:HigherLevelAnalyses performed over data." xref_name="SummaryResults" xref_entity="HigherLevelAnalysis" xref_field="id" xref_label="name"/>
+				<field nillable="true" auto="false" name="hypothesis" type="xref" description="Self-reference (has-single): composite:The hypothesis being tested in the investigation." xref_name="Hypothesis" xref_entity="Description" xref_field="id"/>
+				<field nillable="true" auto="false" name="investigationSummary" type="mref" description="null:OntologyTerms can be referenced that describe the hypothesis, conclusion or other summary information about the Investigation." xref_name="InvestigationSummary" xref_entity="OntologyTerm" xref_field="id" xref_label="name"/>-->
+			<field nillable="true" auto="false" name="start"
+				type="datetime"
+				description="The start point of the investigation. (n.b. removed null constraint)" />
+			<field nillable="true" auto="false" name="end"
+				type="datetime"
+				description="The end point of the investigation. (n.b. removed null constraint)" />
+		</entity>
+
+		<entity name="Material" extends="Identifiable">
+			<description>
+				Material represents any kind of substance used in an
+				experimental workflow, such as whole organisms, cells,
+				DNA, solutions, compounds and experimental substances
+				(gels, arrays etc.). The Material class can be extended
+				by adding subclasses to model domain specific
+				properties, or the relationships to OntologyIndividual
+				can be used to describe the characteristics and type of
+				Material. Materials can be related to other materials
+				through a directed acyclic graph (represented by
+				ProtocolApplication(s)). Sub-component materials can be
+				represented by the self-association on Material (e.g.
+				Wells within a array). These associations are abstract
+				and should be extended to represent these semantics for
+				extensions of ProtocolApplication and Material.
+			</description>
+			<field nillable="true" auto="false" name="components"
+				type="mref"
+				description="null:Association from a Material to other Materials that are sub-components (such as wells within an array plate). If a subcomponent undergoes a ProtocolApplication, then the containing Material must also be an input to the ProtocolApplication and be output as a new Material or version of the Material."
+				xref_name="Components" xref_entity="Material"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="materialType"
+				type="xref"
+				description="null:The type of material used, i.e. RNA, DNA, lipid, phosphoprotein, organism etc."
+				xref_name="MaterialType" xref_entity="OntologyTerm"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="characteristics"
+				type="mref" description="null:The characteristics of a Material. "
+				xref_name="Characteristics" xref_entity="OntologyTerm"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false"
+				name="qualityControlStatistics" type="mref"
+				description="null:Measures of the quality of the Material."
+				xref_name="QualityControlStatistics" xref_entity="OntologyTerm"
+				xref_field="id" xref_label="name" />
+		</entity>
+		<entity name="HigherLevelAnalysis" extends="Identifiable">
+			<description>
+				A container for domain-specific analyses performed on
+				data. Subclasses must be created for different domains.
+			</description>
+			<field nillable="true" auto="false" name="conclusion"
+				type="xref"
+				description="Self-reference (has-single): composite:The conclusion reached from the HigherLevelAnalysis."
+				xref_name="Conclusion" xref_entity="Description"
+				xref_field="id" />
+			<field nillable="true" auto="false" name="supportingData"
+				type="mref"
+				description="null:Association to the Data on which the HigherLevelAnalysis has been performed."
+				xref_name="SupportingData" xref_entity="Data"
+				xref_field="id" xref_label="name" />
+			<field nillable="true" auto="false" name="hypothesis"
+				type="xref"
+				description="Self-reference (has-single): composite:The hypothesis being tested by the HigherLevelAnalysis"
+				xref_name="Hypothesis" xref_entity="Description"
+				xref_field="id" />
+		</entity>
+		<entity name="FugeData" extends="Identifiable">
+			<description>
+				Data can be an input to or an output from a
+				ProtocolApplication. Data may be produced from a
+				Material (data acquisition) or from another Data object
+				(data transformation). Examples of Data are gene
+				expression measurements, or phenotypes associated with
+				genetic manipulations.
+			</description>
+			<!-- field nillable="true" auto="false" name="dimensions" type="mref" description="null:The dimensions contained within this Data object." xref_name="Dimensions" xref_entity="Dimension" xref_field="id" xref_label="name"/-->
+		</entity>
+		<!-- <entity name="Dimension" extends="Identifiable">
+			<description>A single dimension of a coordinate system. The DimensionElement class represents the discrete domain values represented in this dimension. A dimension with infinite domain values is not modeled here, for practical reasons. </description>
+			<field nillable="true" auto="false" name="dimensionType" type="xref" description="null:The type of Dimension e.g. &quot;array feature dimension&quot;" xref_name="DimensionType" xref_entity="OntologyTerm" xref_field="id" xref_label="name"/>
+			</entity> -->
+		<entity name="FugeDimensionElement" extends="Identifiable">
+			<description>
+				A single point within a parent dimension. This class
+				should be extended.
+			</description>
+			<!-- NOT NECESSARY, is classname of the thing <field nillable="false" auto="false" name="Dimension" type="xref" description="Making MREF of 'Dimension.dimensionElements': composite:The DimensionElements belonging to this Dimension." xref_entity="Dimension" xref_field="id" xref_label="name"/>-->
+		</entity>
+	</module>
+</molgenis>

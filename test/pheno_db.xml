@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<molgenis name="pheno.core" label="GEN2PHEN Phenotype Model reference implementation">
+	<description>
+		version: draft 2009-07-12
+		<p />
+		GEN2PHEN Phenotype Model is a minimal data model to represent a data set of phenotypic
+		observations resulting from one or more investigations.
+		Objective is to
+		harmonize the exchange of phenotype descriptions
+		between various
+		repositories and to host phenotype information ranging
+		annotations in
+		locus
+		specific databases to rich
+		clinical reports from
+		cohort studies.
+		The
+		initial version of this model
+		was compiled at the
+		Gen2Phen phenotype
+		workshop, May 8-9, Geneva,
+		building on previous
+		modeling efforts from
+		the XGAP, PaGE, FuGE, LOVD,
+		and MAGE-TAB
+		projects.
+		Were appropriate
+		mapping to these models are
+		provided.
+		<p />
+		This document was created by: Morris Swertz, Juha Muilu, Gudmundur
+		Thorisson, Tomasz
+		Adamusiak, Isabel Fortier, Paul Burton, John
+		Hancock,
+		Illke Lappalainen, Anthony Brookes, other members of the
+		GEN2PHEN
+		collaboration and Helen Parkinson. This work is sponsored by
+		EU-GEN2PHEN, EU-CASIMIR, P3G, NWO-Rubicon, NBIC BioAssist/Biobanking.
+		<p>
+			changelog/decisions 2009-07-20 (following MPD import by TA):
+			<ol>
+				<li />
+				Changed time on ObservedValue to optional
+			</ol>
+			changelog/decisions 2009-06-11 (following G2P AM4):
+			<ol>
+				<li />
+				Added self-reference on Protocol to create aggregated protocols
+				Use
+				case: a study is a set of Questionnaires, each questionaire being a
+				protocol
+				<li />
+				Added VariableDefinition as subclass of Observable feature and moved
+				attribute 'unit' from ObservedValue to ValueDefinition.
+				VariableDefinition can refer to one (?) ObservableFeature concept.
+				Use case: a questionaire (protocol) is defined to measure 'length'
+				in
+				cm; 'length' is the observable feature, 'length in cm' the
+				VariableDefinition.
+				Motivation: if unit was defined on ObservedValue
+				than one cannot define the unit
+				for a protocol.
+				If unit was defined in
+				two places (protocol and value level) then they
+				can conflict with
+				each
+				other.
+				<li />
+				Added timestamp to both the protocolApplication and ObservedValue
+				Use
+				case: blood pressure was measured at five ten minute intervals at
+				8:00, 8:10, 8:20
+				Motivation: protocols often include repeated
+				measurements. Positive example is
+				the use case of blood pressure time
+				series. Negative example is
+				'blood pressure standing' and 'blood
+				pressure lying down' which are
+				different observableFeatures.
+				<li />
+				Adapted the description of protocolapplication to say it is an
+				'instance' of the protocol usage.
+				<li />
+				Did not change observableFeature.name into
+				observableFeature.description is not advisable as it is
+				inconsistent.
+				<li />
+				Did not replace subclass InferredValue with a directional self
+				reference on ObservedValue because of understandeability
+			</ol>
+			changelog/decisions 2009-06-12 (following meeting Juha Muilu, Morris Swertz,
+			Tomasz Adamusiak):
+			<ol>
+				<li />
+				Protocol.name is not unique within an
+				investigation as it can be
+				reused in multiple studies, a relationship definable via
+				ProtocolApplication.
+				<li />
+				ObservationTargets are not unique to one investigations as they can
+				be observed in multiple studies, a
+				relationship definable via the
+				ObservedValue.
+				<li />
+				SelfRecursion on ObservedValue for multivalue and
+				derived value was
+				dropped for simplicity reasons. Until shown
+				otherwise multivalue
+				features can be grouped by
+				protocol.
+				<li />
+				ObservedValue name is not made unique within
+				investigation as defies
+				its purpose is to integrate between studies.
+				<li />
+				There is no explicit relationship between ObservedValue.value and
+				Code.term; such constraint checking is outside the scope of this
+				model.
+				<li />
+				Added a 'value' to ParameterValue which was missing.
+				<li />
+				Changed that Code doesn't extend the OntologyTerm class but instead
+				refers to an instance.
+				<li />
+				InferredValue seems not normalized in the sense that one has to
+				repeat
+				ObservationTarget which is implied via the ObservedValues it
+				refers
+				to. However, this is not changed because it can be that an
+				inference
+				is provided without providing the ObservedValues or that a
+				Panel level inference is derived from a set of individual level
+				observedvalues.
+			</ol>
+		</p>
+		<p>
+
+		</p>
+	</description>
+	<module name="pheno.system">
+		<description>This packages describes basic classes that are used
+			as building blocks for the pheno.core model.</description>
+		<entity name="Identifiable" abstract="true">
+			<description>(For implementation purposes) The Identifiable
+				interface provides its sub-classes with a unique numeric identifier
+				within the
+				scope of one database. This class maps to
+				FuGE::Identifiable
+				(together with Nameable interface)</description>
+			<field nillable="false" auto="true" name="id" type="int"
+				readonly="true" description="Automatically generated id-field"
+				unique="true" />
+		</entity>
+		<entity name="Nameable" abstract="true">
+			<description>(For modeling purposes) The Nameable interface
+				provides its sub-classes a meaningful name that need not be unique.
+				This class maps to FuGE::Identifiable (together with
+				Identifiable
+				interface)</description>
+			<field nillable="false" auto="false" name="name" length="127"
+				type="varchar" description="A human-readable and potentially ambiguous common identifier" />
+		</entity>
+		<entity name="OntologySource" implements="Identifiable,Nameable">
+			<description>The OntologySource class
+				defines a reference to a an
+				existing ontology or controlled
+				vocabulary from
+				which well-defined and
+				stable (ontology) terms can be
+				obtained. For
+				instance: MO, GO, EFO,
+				UMLS, etc. Use of existing
+				ontologies/vocabularies is recommended to
+				harmonize phenotypic
+				descriptions. This class maps to
+				FuGE::OntologySource, MAGE-TAB::TermSourceREF.</description>
+			<field nillable="false" auto="false" name="ontologyURI" type="hyperlink"
+				description="A URI that references the location of the ontology." />
+		</entity>
+		<entity name="OntologyTerm" implements="Identifiable">
+			<description>The OntologyTerm class defines references to a single
+				entry from
+				an ontology or a controlled vocabulary. Other classes can
+				reference
+				to this OntologyTerm to harmonize naming of concepts. Each
+				term
+				should have a local, unique label.
+				Good practice is to label it
+				'sourceid:term', e.g. 'MO:cell' If no
+				suitable ontology term exists
+				one can define new terms locally in
+				which case there is no formal
+				accession for the term. In those cases
+				the local name should be
+				repeated in both term and termAccession.
+				Maps to
+				FuGE::OntologyIndividual; in MAGE-TAB there is no separate
+				entity to
+				model terms.
+			</description>
+			<!--
+				implementation note: we need multivalued lookups to easily browse to
+				terms Or even better, make an new field type='ontology'
+			-->
+			<field nillable="false" auto="false" name="term" type="varchar"
+				description="The ontology term itself, also known as the 'local name' in some ontologies." />
+			<field name="termLabel" type="string"
+				description="The label that is used to refer to this term inside this data set. For instance 'MO:cell'" />
+			<unique fields="termLabel"
+				description="the local label of the OntologyTerm is unique within a data set." />
+			<field nillable="true" auto="false" name="termSource" type="xref"
+				description="The source ontology or controlled vocabulary list that ontology terms have been obtained from."
+				xref_field="OntologySource.id" xref_label="name" />
+			<field nillable="true" auto="false" name="termAccession" type="varchar"
+				description="The accession number assigned to the ontology term in the source ontology. If empty it is assumed to be a locally defined term. " />
+		</entity>
+	</module>
+	<module name="pheno.observation">
+		<description>This package describes the minimal model for
+			phenotypes.</description>
+		<entity name="Investigation" implements="Identifiable,Nameable">
+			<description>
+				The Investigation class defines self-contained units of
+				study, each
+				having a unique name and a group of actions (protocol
+				applications)
+				and/or results (in ObservedValues). For instance:
+				Framingham study.
+				Maps to
+				XGAP/FuGE Investigation
+				and MAGE-TAB experiment.
+				<br />
+				Discussion: should we adopt MAGE-TAB::IDF type of minimal
+				information about an investigation?
+			</description>
+			<unique fields="name" description="Name is unique" />
+		</entity>
+		<entity name="ObservableFeature" implements="Identifiable,Nameable">
+			<description>
+				The ObservableFeature class defines anything that can be
+				observed
+				(there may be many alternative protocols to measure them).
+				For
+				instance: systolic
+				blood pressure, Diastolic blood pressure,
+				Treatment for
+				hypertension. These names are unique within a data set.
+				Preferably each ObservableFeature should
+				be named according
+				to a
+				well-defined ontology. This class maps to XGAP
+				Trait, FuGE
+				DimensionElement and PaGE ObservableFeature. Multi-value features
+				can be grouped by protocol. For instance: blood pressure consists of
+				observations for features systolic and diastolic blood pressure.
+			</description>
+			<field name="ontologyReference" type="xref" xref_field="OntologyTerm.id"
+				xref_label="termLabel" nillable="true"
+				description="Reference to the formal ontology definition for this feature" />
+			<unique fields="name" />
+		</entity>
+		<entity name="ObservedValue" implements="Identifiable">
+			<description>
+				The ObservableValue class defines the actual
+				observation. For
+				instance: 160 mmHg, 90mmHg, "no treatment". This
+				class has no FuGE
+				equivalent because in FuGE the data -
+				protocolapplication association
+				is reversed, i.e. the
+				ProtocolApplication has input/output Data
+				(which could be
+				ObservedValues).
+				Maps to XGAP DataElement that uses
+				the FuGE approach,
+				so oberved
+				values are grouped into 'Data';
+				Maps to
+				PaGE observed value.
+			</description>
+			<field name="investigation" type="xref" xref_entity="Investigation"
+				xref_field="id" xref_label="name"
+				description="Reference to the Investigation this observedValue belongs to." />
+			<field nillable="true" auto="false" name="time" type="datetime"
+				description="time when the protocol was applied." />
+			<field name="observationTarget" type="xref" xref_field="ObservationTarget.id"
+				xref_label="name" description="Reference to the subject that has been observed" />
+			<field name="observableFeature" type="xref" xref_field="ObservableFeature.id"
+				xref_label="name" description="Reference to the feature that was observed" />
+			<field name="value" description="The value observed" />
+			<field name="protocolApplication" type="xref" xref_field="ProtocolApplication.id"
+				xref_label="name" nillable="true"
+				description="Reference to the protocol application that produced this observation" />
+		</entity>
+		<entity name="InferredValue" extends="ObservedValue">
+			<description>
+				The InferredValue class defines ObservedValues that are inferred as
+				result of human or computational post-processing of previous
+				ObservedValues. The protocol used for this inference can be defined
+				via the
+				protocolApplication association that is inherited from
+				ObservedValue. For
+				instance: hypertensive = yes when mean arterial
+				pressure = 135 AND no
+				hypertension affecting medicine is taken. This
+				class has no direct
+				mapping to other models: XGAP would use
+				input/ouput Data; PaGE would
+				use a self reference on ObservedValue
+				<br />
+				Implementation discussion: how to make the derivedFrom relationship
+				understandeable
+				in UI. Would need a multicolumn lookup including
+				target, feature,
+				value, and unit. Now one just gets a value.
+			</description>
+			<field name="derivedFrom" type="mref" xref_field="ObservedValue.id"
+				xref_label="value"
+				description="References to one or more observed values that were used to infer this observation" />
+		</entity>
+		<entity name="ObservationTarget" implements="Identifiable,Nameable">
+			<description>
+				An ObservationTarget class defines the subjects of
+				observation. For
+				instance: individual 1 from study x. This class maps
+				to XGAP subject
+				and maps to Page Abstract_Observation_Target. The
+				name of
+				observationTargets is unique within its Investigation.
+			</description>
+		</entity>
+	</module>
+	<module name="pheno.target">
+		<entity name="Individual" extends="ObservationTarget">
+			<description>
+				The Individuals class defines human cases that are used as
+				observation target. This class maps to
+				XGAP and PaGE individual.
+				<br />
+				Discussion: what minimal properties should be hard-coded? E.g. sex
+				is assumed to be an observablefeature while in PAGE/XGAP it as a
+				direct property of individual.
+			</description>
+			<field name="species" type="xref" xref_field="OntologyTerm.id"
+				xref_label="termLabel" />
+			<field name="sex" type="enum" enum_options="[male,female,unknown]" />
+			<field name="mother" type="xref" nillable="true" xref_field="Individual.id"
+				xref_label="name" description="Refers to the mother of the individual." />
+			<field name="father" type="xref" nillable="true" xref_field="Individual.id"
+				xref_label="name" description="Refers to the father of the individual." />
+		</entity>
+		<entity name="Panel" extends="ObservationTarget">
+			<description> The Panel class defines groups of individuals that can
+				act as a single
+				ObservationTarget. Thus a whole group can have
+				ObservedValues such
+				as 'middle aged man' or 'recombinant mouse inbred
+				Line dba x b6'.
+				This class maps to XGAP/PaGE panel classes.
+			</description>
+			<field name="individuals" type="mref" xref_field="Individual.id"
+				xref_label="name" description="The list of individuals in this panel" />
+		</entity>
+	</module>
+	<module name="pheno.variable">
+		<description>The variable package provides classes to define
+			variables as used within a protocol/questionaire. Variables are
+			specific types of observable features in that they have a unit
+			attached</description>
+		<entity name="VariableDefinition" extends="ObservableFeature">
+			<description>The VariableDefinition class extends the
+				ObservableFeature class to enable precise definition of the unit of
+				ObservableFeature.</description>
+			<field name="unit" type="xref" xref_field="OntologyTerm.id"
+				xref_label="termLabel"
+				description="Reference to the well-defined measurement unit used to observe this features (if feature is that concrete). E.g. mmHg" />
+			<field name="codeList" type="xref" nillable="true" xref_field="CodeList.id"
+				xref_label="name" />
+		</entity>
+		<entity name="CodeList" implements="Identifiable,Nameable">
+			<description>
+				The CodeList class names lists of discrete values
+				that
+				are
+				available
+				as options for a particular VariableDefintion.
+			</description>
+		</entity>
+		<entity name="Code" implements="Identifiable">
+			<description> The Code class names the code values for a
+				particular
+				codelist. It extends from ontologyTerm adding the option to define
+				pretty labels. For instance 'f=female', 'm=male'</description>
+			<field name="codeList" type="xref" xref_field="CodeList.id"
+				xref_label="name" description="The code-list this code is defined to be part of" />
+			<field name="value" description="The value that represents the code in the data" />
+			<field name="label"
+				description="The pretty label that represents the human understandeable meaning of the code. For instance the label on a CRF." />
+			<field name="ontologyTerm" type="xref" nillable="true"
+				xref_field="OntologyTerm.id" xref_label="termLabel" />
+		</entity>
+	</module>
+	<module name="pheno.protocol">
+		<description>The protocol package provides classes to describe
+			protocols that are planned, or have been used, for observation. This
+			can include questionnaires, wet-lab protocols and dry-lab
+			protocols.
+			Very similar to FuGE/XGAP and MAGE-TAB</description>
+		<entity name="Protocol" implements="Identifiable,Nameable">
+			<description>
+				The Protocol class defines parameterizable
+				descriptions
+				of methods;
+				each protocol has a unique name within a dataset. Each
+				ProtocolApplication can define the
+				ObservableFeatures it can observe
+				as well as the
+				optional Parameters. For
+				instance:
+				SOP
+				for blood pressure
+				measurement used by UK biobank. This
+				class
+				maps
+				to FuGE/XGAP/MageTab
+				Protocol, but in contrast to FuGE it is
+				not
+				required to extend
+				protocol before use. Note that the FuGE's
+				mechanism of parameters
+				(for protocol) and parametervalues (for
+				application) is not shown.
+				Has no equivalent in PaGE.
+			</description>
+			<field name="observableFeatures" type="mref" xref_field="ObservableFeature.id"
+				xref_label="name" nillable="true"
+				description="The features that can be observed using this protocol." />
+			<field name="protocolComponents" type="mref" nillable="true"
+				xref_field="Protocol.id" xref_label="name"
+				description="The set of protocols that together to make up this protocol. For instance: a set of questionnaires." />
+		</entity>
+		<entity name="ProtocolApplication" implements="Identifiable,Nameable">
+			<description> A ProtocolApplication class defines the actual action
+				of
+				observation by instantiating a protocol and optional
+				ParameterValues. For
+				example: the action of
+				blood pressure
+				measurement
+				on 1000
+				individuals, using a particular
+				protocol,
+				resulting in 1000
+				associated observed values. This class
+				maps to
+				FuGE/XGAP
+				ProtocolApplication, but in FuGE
+				ProtocolApplications can
+				take
+				Material or Data (or both) as input and
+				produce Material or
+				Data (or
+				both) as output. Similar to
+				PaGE.ObservationMethod
+			</description>
+			<field auto="false" name="time" type="datetime"
+				description="time when the protocol was applied." />
+			<field name="protocol" type="xref" xref_field="Protocol.id"
+				xref_label="name" description="Reference to the protocol that is being used." />
+			<field name="investigation" type="xref" xref_entity="Investigation"
+				xref_field="id" xref_label="name"
+				description="Reference to the Investigation this protocolapplication belongs to." />
+			<unique fields="name,investigation"
+				description="name of an protocolapplication is unique within an Investigation" />
+		</entity>
+		<entity name="ProtocolParameter" implements="Identifiable,Nameable">
+			<description>
+				ProtocolParameter represents a variable
+				of a Protocol that is
+				instantiated as a Parameter Value (see ParameterValue). For instance
+				'growth temperature' in a protocol
+				where yeast are grown at
+				permissive and non permissive temperatures. It implements Unit to
+				define the parameter type and allowed values.
+				<br />
+				ProtocolParameter maps to FuGE::Parameter
+			</description>
+			<field name="protocol" type="xref" xref_field="Protocol.id"
+				xref_label="name" nillable="true" />
+		</entity>
+		<entity name="ParameterValue" label="Parameter Value"
+			implements="Identifiable">
+			<description>
+				A ParameterValue is instantiated when a
+				ProtocolApplication applies
+				a Protocol with Parameters.
+				ParameterValue implements Measurement to provide values and
+				Units for
+				ParameterValues. The FuGE equivalent to ParameterValue is
+				FuGE::ParameterValue
+			</description>
+			<field name="protocolApplication" type="xref" xref_field="ProtocolApplication.id"
+				xref_label="name"
+				description="Reference to the protocol application for which this parameter value was chosen for" />
+			<field name="protocolParameter" type="xref" xref_field="ProtocolParameter.id"
+				xref_label="name"
+				description="Reference to the protocol parameter that is being bound by this value" />
+			<field name="value"
+				description="The chosen value of the parameter within this protocol application" />
+		</entity>
+	</module>
+</molgenis>
