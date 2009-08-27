@@ -4,8 +4,8 @@ spec = Gem::Specification.new do |s|
   s.name = "molgenis-gem"
   s.version = "0.0.1"
   s.date = "2009-08-27"
-  s.summary = "A Ruby implementation of the interaction of MOLGENIS datamodels (XML) with MyExperiment."
-  s.description = "This gem has all the necessary classes to allow MOLGENIS datamodels to be handled by the MyExperiment website."
+  s.summary = "A Ruby implementation of the interaction of MOLGENIS datamodels (XML)."
+  s.description = "This gem has simple classes to allow parsing and visualization of MOLGENIS datamodels."
   
   s.authors = ["Morris Swertz", "Joeri van der Velde"]
   s.email = "m.a.swertz@rug.nl"

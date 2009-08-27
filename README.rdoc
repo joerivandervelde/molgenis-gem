@@ -1,0 +1,17 @@
+= MOLGENIS[http://molgenis.sourceforge.net] Metamodel Interaction gem
+
+Author::        Morris Swertz, Joeri van der Velde
+Version::       0.0.1
+Contact::       m.a.swertz@rug.nl
+URL::           http://molgenis.sourceforge.net/
+Licence::       LGPL 3 (See LICENCE or http://www.gnu.org/licenses/lgpl.html)
+Copyright::     (c) 2004-2009 University of Groningen, University Medical Center Groningen, Inventory.nl
+
+
+
+== Synopsis
+
+This is a Ruby library to support the interaction with and visualization of MOLGENIS meta models [http://molgenis.sourceforge.net].  
+- GraphViz[http://www.graphviz.org/Download.php] (a graph visualization package)
+- Rdoc gem
+- LibXml gem
