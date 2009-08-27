@@ -9,12 +9,13 @@ module MOLGENIS
     # foo = ... # stuff to initialize foo here
     # bar = MOLGENIS_MODEL:Parser.new.parse(foo)
     def parse(molgenis_src)
+      puts "tests"
       case molgenis_src.class.to_s
         when /^string$/i
-        document = LibXML::XML::Parser.string(molgenis_src).parse
+        document = LibXML::XML::Parser.string(molgenis_src,:encoding => LibXML::XML::Encoding::UTF_8).parse
         when /^stringio|file$/i
         molgenis_src.rewind
-        document = LibXML::XML::Parser.string(molgenis_src.read).parse
+        document = LibXML::XML::Parser.string(molgenis_src.read,:encoding => LibXML::XML::Encoding::UTF_8).parse
       else
         raise "Error parsing file."
       end
@@ -44,7 +45,7 @@ module MOLGENIS
       parse_entities(element.find("entity"),model, color)
       
       element.find("module").each { |module_xml|
-      
+        
         module_obj = ModuleModel.new
         module_attributes = module_xml.attributes
         module_obj.name = module_attributes["name"]
@@ -56,28 +57,38 @@ module MOLGENIS
         
         model.modules << module_obj
       }
-     
+      
       return model
     end
     
     def parse_entities(entities,module_obj,colorno)
-       if entities
+      if entities
         entities.each do |entity_xml|
           entity = EntityModel.new
           entity.module_name = module_obj.name
           entity_attributes = entity_xml.attributes
           entity.name = entity_attributes["name"]
           entity.color = colorno
+          
+          entity.description =""
+          entity_xml.find("description").each { |desc| 
+            desc.children.each { |el| 
+              entity.description = entity.description + el.to_s
+            }
+          }    
+          
           entity_attributes["implements"].split(",").each { |interface|
             entity.implements << interface
           } if !entity_attributes["implements"].nil?
           entity.extends = entity_attributes["extends"]
-
+          
           entity_xml.find("field").each do |field_xml|
             field = FieldModel.new
             field_attributes = field_xml.attributes
             field.name = field_attributes["name"]
             field.type = field_attributes["type"]
+            field.label = field_attributes["label"]
+            field.description = field_attributes["description"]
             if(field_attributes["xref_field"])
               split = field_attributes["xref_field"].split(".")
               if(split.size == 2)

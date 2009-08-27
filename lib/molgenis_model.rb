@@ -39,7 +39,7 @@ module MOLGENIS # :nodoc:
   
   #Definition of an Entity in MOLGENIS model
   class EntityModel
-    attr_accessor :name, :label, :fields, :abstract,:implements,:extends,:module_name,:color
+    attr_accessor :name,:label, :fields, :abstract,:implements,:extends,:module_name,:color,:description
     
     # Creates an empty entity 
     def initialize
@@ -50,6 +50,6 @@ module MOLGENIS # :nodoc:
   end
   
   class FieldModel
-    attr_accessor :name,:type,:system,:xref_entity,:xref_field      
+    attr_accessor :name,:label,:type,:system,:xref_entity,:xref_field,:description      
   end
 end
