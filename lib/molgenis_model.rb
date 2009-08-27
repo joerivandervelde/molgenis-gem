@@ -23,9 +23,19 @@ module MOLGENIS # :nodoc:
         }
         
       }
-      puts all_entities.size
-      puts @modules.size
+      #puts all_entities.size
+      #puts @modules.size
       all_entities
+    end
+    
+    def field_count
+      count = 0;
+      all_entities.each do |e|
+        e.fields.each do |f| 
+          count = count + 1
+        end
+      end
+      count
     end
   end  
   
@@ -34,6 +44,11 @@ module MOLGENIS # :nodoc:
     
     def initialize
       @entities = []
+    end
+    
+    def get_label
+      return name if label.nil?
+      return label
     end
   end
   
