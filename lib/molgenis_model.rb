@@ -23,7 +23,7 @@ module MOLGENIS # :nodoc:
         }
         
       }
-      #puts all_entities.size
+      # all_entities.size
       #puts @modules.size
       all_entities
     end
@@ -60,6 +60,25 @@ module MOLGENIS # :nodoc:
     def initialize
       @fields = []
       @implements = []
+    end
+    
+    def get_implemented_fields(model)
+      implemented_fields = []
+      
+      @implements.each do |interface_name|
+        #find interface
+        entity = nil
+        model.all_entities.each do |e|
+          if(e.name == interface_name) 
+            entity = e 
+          end
+        end
+        entity.fields.each do |e| 
+          implemented_fields << e 
+        end
+      end
+      
+      implemented_fields
     end
     
   end

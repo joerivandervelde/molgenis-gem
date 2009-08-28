@@ -2,7 +2,7 @@
 
 spec = Gem::Specification.new do |s| 
   s.name = "molgenis-gem"
-  s.version = "0.0.4"
+  s.version = "0.0.6"
   s.date = "2009-08-27"
   s.summary = "A Ruby implementation of the interaction of MOLGENIS datamodels (XML)."
   s.description = "This gem has simple classes to allow parsing and visualization of MOLGENIS datamodels."

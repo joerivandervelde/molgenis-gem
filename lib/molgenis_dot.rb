@@ -88,11 +88,11 @@ module MOLGENIS
                 fontcolor = "black"
                 color = "black"
                 <% end %>
-                label = "{<% if entity.abstract %>Interface:<% end %><%= entity.name %><% entity.implements.each do |interface| %>\nimplements <%=interface%><% end %>|<% entity.fields.each do |f| %><% if !f.system %><%=f.name%> : <%=f.type %><% if (f.type=="xref" || f.type=="mref") %>(<%= f.xref_entity %>.<%=f.xref_field %>)<%end%>\l<%end%><%end%>}"
+                label = "{<% if (entity.abstract) %>Interface:<% end %><%= entity.name %><% entity.implements.each do |interface| %>\nimplements <%=interface%><% end %>|<% entity.fields.each do |f| %><% if !f.system %><%=f.name%> : <%=f.type %><% if (f.type=="xref" || f.type=="mref") %>(<%= f.xref_entity %>.<%=f.xref_field %>)<%end%>\l<%end%><%end%>}"
             ]    
       <% } %>
       
-   /*interface relationships*/
+   /*interface relationships
           edge [
                   arrowhead = "empty"
                   color = "grey"
@@ -103,7 +103,7 @@ module MOLGENIS
              "<%= entity.name %>" -> "<%= interface %>"
             <%end%>
         <%end %>
-  <% end %> 
+  <% end %> */
       
   /*extends relationships*/
           edge [

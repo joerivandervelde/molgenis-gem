@@ -9,7 +9,6 @@ module MOLGENIS
     # foo = ... # stuff to initialize foo here
     # bar = MOLGENIS_MODEL:Parser.new.parse(foo)
     def parse(molgenis_src)
-      puts "tests"
       case molgenis_src.class.to_s
         when /^string$/i
         document = LibXML::XML::Parser.string(molgenis_src,:encoding => LibXML::XML::Encoding::UTF_8).parse
@@ -32,7 +31,6 @@ module MOLGENIS
     def create_model(element, version) # :nodoc:
       model = MolgenisModel.new
       model.name = element.attributes['name']
-      puts element.attributes['name'] + model.name
       model.version = version
       model.description = ""
       element.find("description").each { |desc| 
@@ -68,6 +66,7 @@ module MOLGENIS
           entity.module_name = module_obj.name
           entity_attributes = entity_xml.attributes
           entity.name = entity_attributes["name"]
+          entity.abstract = entity_attributes["abstract"]          
           entity.color = colorno
           
           entity.description =""
@@ -87,6 +86,7 @@ module MOLGENIS
             field_attributes = field_xml.attributes
             field.name = field_attributes["name"]
             field.type = field_attributes["type"]
+            field.type = "string" if field.type.nil?
             field.label = field_attributes["label"]
             field.description = field_attributes["description"]
             if(field_attributes["xref_field"])
